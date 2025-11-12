@@ -1,4 +1,6 @@
-﻿using UserManagement.Application.Models;
+﻿using Microsoft.AspNetCore.Identity;
+using UserManagement.Application.Models;
+using UserManagement.Domain.Enums;
 using UserManagement.Domain.IRepositories;
 
 using EntityUser = UserManagement.Domain.Entities.User;
@@ -30,6 +32,16 @@ public class UserService : IUserService
         return FromEntityToModel(userEntity);
     }
 
+    public async Task<UserModel?> GetByUsernameAsync(string username)
+    {
+        var userEntity = await _userRepository.GetByUsernameAsync(username);
+        if (userEntity is null)
+        {
+            throw new ArgumentNullException(nameof(userEntity), $"{nameof(userEntity)} is null");
+        }
+        return FromEntityToModel(userEntity);
+    }
+
     public Task<UserModel> GetByEmailAsync(string email)
     {
         throw new NotImplementedException();
@@ -47,16 +59,42 @@ public class UserService : IUserService
         return FromEntityToModel(createdEntity);
     }
 
-    public Task UpdateAsync(UserModel userModel)
+    public async Task UpdateAsync(UserModel userModel)
     {
-        throw new NotImplementedException();
+        if (userModel is null)
+        {
+            throw new ArgumentNullException(nameof(userModel), $"{nameof(userModel)} is null");
+        }
+        
+        var userEntity = FromModelToEntity(userModel);
+        await _userRepository.UpdateAsync(userEntity);
     }
 
     public Task DeleteAsync(Guid id)
     {
         throw new NotImplementedException();
     }
+
+    public async Task<UserModel> RegisterUserAsync(UserModel userModel)
+    {
+        if (userModel is null)
+        {
+            throw new ArgumentNullException(nameof(userModel), $"{nameof(userModel)} is null");
+        }
+
+        var userEntity = FromModelToEntity(userModel);
+
+        var hasher = new PasswordHasher<UserModel>();
+        userEntity.PasswordHash = hasher.HashPassword(userModel, userModel.Password);
     
+        var registerEntity = await _userRepository.CreateAsync(userEntity);
+    
+        var resultModel = FromEntityToModel(registerEntity);
+        // resultModel.PasswordHash = null;
+    
+        return resultModel;
+    }
+
 
     private static EntityUser FromModelToEntity(UserModel userModel) =>
         new()
@@ -66,7 +104,8 @@ public class UserService : IUserService
             FirstName = userModel.FirstName,
             LastName = userModel.LastName,
             Email = userModel.Email,
-            PasswordHash = userModel.Password
+            PasswordHash = userModel.Password,
+            Role = Enum.TryParse<UserRole>(userModel.Role, true, out var role) ? role : UserRole.User
         };
 
     private static UserModel FromEntityToModel(EntityUser user) =>
@@ -77,6 +116,7 @@ public class UserService : IUserService
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
-            Password = user.PasswordHash
+            Password = user.PasswordHash,
+            Role = user.Role.ToString()
         };
 }

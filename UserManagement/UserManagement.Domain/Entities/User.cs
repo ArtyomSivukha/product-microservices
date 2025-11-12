@@ -11,5 +11,7 @@ public class User
     public string Email { get; set; }
     public string PasswordHash { get; set; }
     public UserRole Role { get; set; }
-    
+    public bool IsActive { get; set; } = true;
+    public DateTime Created { get; set; } = DateTime.UtcNow;
+    public DateTime Modified { get; set; } = DateTime.UtcNow;
 }

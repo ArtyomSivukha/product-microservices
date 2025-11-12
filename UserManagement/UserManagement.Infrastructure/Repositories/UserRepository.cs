@@ -13,14 +13,19 @@ public class UserRepository : IUserRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync()
+    public async Task<IEnumerable<User?>> GetAllAsync()
     {
         return await _dbContext.Users.ToArrayAsync();
     }
 
-    public Task<User?> GetByIdAsync(Guid id)
+    public async Task<User?> GetByIdAsync(Guid id)
     {
-        return _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+        return await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        return await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
     }
 
     public Task<User> GetByEmailAsync(string email)
@@ -28,16 +33,24 @@ public class UserRepository : IUserRepository
         throw new NotImplementedException();
     }
 
-    public async Task<User> CreateAsync(User user)
+    public async Task<User?> CreateAsync(User? user)
     {
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
         return user;
     }
 
-    public Task UpdateAsync(User user)
+    public async Task UpdateAsync(User user)
     {
-        throw new NotImplementedException();
+        var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
+        if (userEntity is null)
+        {
+            throw new ArgumentNullException(nameof(userEntity), $"{nameof(userEntity)} is null");
+        }
+        
+        userEntity.FirstName = user.FirstName;
+        userEntity.LastName = user.LastName;
+        await _dbContext.SaveChangesAsync();
     }
 
     public Task DeleteAsync(Guid id)
