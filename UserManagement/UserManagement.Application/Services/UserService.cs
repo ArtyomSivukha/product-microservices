@@ -35,10 +35,10 @@ public class UserService : IUserService
     public async Task<UserModel?> GetByUsernameAsync(string username)
     {
         var userEntity = await _userRepository.GetByUsernameAsync(username);
+    
         if (userEntity is null)
-        {
-            throw new ArgumentNullException(nameof(userEntity), $"{nameof(userEntity)} is null");
-        }
+            return null;
+    
         return FromEntityToModel(userEntity);
     }
 

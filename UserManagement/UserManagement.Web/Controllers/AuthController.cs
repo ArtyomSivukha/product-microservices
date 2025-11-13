@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using UserManagement.Application.Models;
 using UserManagement.Application.Services;
+using UserManagement.Web.Model;
 
 namespace UserManagement.Web.Controllers;
 
@@ -20,12 +21,12 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
     {
         var user = await _userService.GetByUsernameAsync(request.Username);
         if (user is null)
         {
-            return Unauthorized("Invalid username");
+            return Unauthorized("Invalid credentials");
         }
 
         try
@@ -43,5 +44,3 @@ public class AuthController : ControllerBase
         }
     }
 }
-
-public record LoginRequest(string Username, string Password);

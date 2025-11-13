@@ -47,14 +47,21 @@ public class UserRepository : IUserRepository
         {
             throw new ArgumentNullException(nameof(userEntity), $"{nameof(userEntity)} is null");
         }
-        
+
         userEntity.FirstName = user.FirstName;
         userEntity.LastName = user.LastName;
         await _dbContext.SaveChangesAsync();
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var deleteUserEntity = await _dbContext.Users.FindAsync(id);
+        if (deleteUserEntity is null)
+        {
+            throw new ArgumentNullException(nameof(deleteUserEntity), $"{nameof(deleteUserEntity)} is null");
+        }
+
+        _dbContext.Users.Remove(deleteUserEntity);
+        await _dbContext.SaveChangesAsync();
     }
 }
