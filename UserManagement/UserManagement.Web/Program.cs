@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-// builder.Services.AddAuthorization();
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
