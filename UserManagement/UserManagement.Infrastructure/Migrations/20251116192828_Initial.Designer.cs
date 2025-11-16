@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using UserManagement.Infrastructure;
+using UserManagement.Infrastructure.Database;
 
 #nullable disable
 
 namespace UserManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20251112082542_Initial")]
+    [Migration("20251116192828_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace UserManagement.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("UserManagement.Domain.Entities.User", b =>
+            modelBuilder.Entity("UserManagement.Infrastructure.Database.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

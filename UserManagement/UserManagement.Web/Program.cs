@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UserManagement.Application.Services;
-using UserManagement.Domain.IRepositories;
-using UserManagement.Infrastructure;
+using UserManagement.Domain.Repositories;
+using UserManagement.Infrastructure.Database;
 using UserManagement.Infrastructure.Repositories;
-using UserManagement.Web;
+using UserManagement.Web.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,9 +18,16 @@ builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("UserDbContext"));
 });
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("Jwt")
+);
+
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var jwtOptions = jwtSection.Get<JwtOptions>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -35,17 +42,14 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtOptions.Key))
         };
     });
 
 builder.Services.AddAuthorization();
-
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<TokenService>();
 
 // builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -75,7 +79,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            []
         }
     });
 });

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using UserManagement.Infrastructure;
+using UserManagement.Infrastructure.Database;
 
 #nullable disable
 
@@ -22,7 +22,7 @@ namespace UserManagement.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("UserManagement.Domain.Entities.User", b =>
+            modelBuilder.Entity("UserManagement.Infrastructure.Database.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using UserManagement.Domain.Entities;
-using UserManagement.Domain.IRepositories;
+using UserManagement.Domain.Enums;
+using UserManagement.Domain.Repositories;
+using UserManagement.Domain.Users;
+using UserManagement.Infrastructure.Database;
+using UserManagement.Infrastructure.Database.Entities;
 
 namespace UserManagement.Infrastructure.Repositories;
 
@@ -13,43 +16,48 @@ public class UserRepository : IUserRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<User?>> GetAllAsync()
+    public async Task<IEnumerable<UserModel>> GetAllAsync()
     {
-        return await _dbContext.Users.ToArrayAsync();
+        var users = await _dbContext.Users.ToArrayAsync();
+        return users.Select(FromEntityToModel);
     }
 
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<UserModel?> GetByIdAsync(Guid id)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+        var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+        return userEntity is null ? null : FromEntityToModel(userEntity);
     }
 
-    public async Task<User?> GetByUsernameAsync(string username)
+    public async Task<UserModel?> GetByUsernameAsync(string username)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
+        var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
+        return userEntity != null ? FromEntityToModel(userEntity) : null;
     }
 
-    public Task<User> GetByEmailAsync(string email)
+    public Task<UserModel> GetByEmailAsync(string email)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<User?> CreateAsync(User? user)
+    public async Task<UserModel> CreateAsync(UserModel user)
     {
-        _dbContext.Users.Add(user);
+        var userEntity = FromModelToEntity(user);
+        _dbContext.Users.Add(userEntity);
         await _dbContext.SaveChangesAsync();
-        return user;
+        return FromEntityToModel(userEntity);
     }
 
-    public async Task UpdateAsync(User user)
+    public async Task UpdateAsync(UserModel user)
     {
         var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
         if (userEntity is null)
         {
             throw new ArgumentNullException(nameof(userEntity), $"{nameof(userEntity)} is null");
         }
-
         userEntity.FirstName = user.FirstName;
         userEntity.LastName = user.LastName;
+        userEntity.PasswordHash= user.Password;
+        userEntity.Email = user.Email;
         await _dbContext.SaveChangesAsync();
     }
 
@@ -64,4 +72,28 @@ public class UserRepository : IUserRepository
         _dbContext.Users.Remove(deleteUserEntity);
         await _dbContext.SaveChangesAsync();
     }
+    
+    private static User FromModelToEntity(UserModel userModel) =>
+        new()
+        {
+            Id = userModel.Id,
+            Username = userModel.Username,
+            FirstName = userModel.FirstName,
+            LastName = userModel.LastName,
+            Email = userModel.Email,
+            PasswordHash = userModel.Password,
+            Role = Enum.TryParse<UserRole>(userModel.Role, true, out var role) ? role : UserRole.User
+        };
+
+    private static UserModel FromEntityToModel(User user) =>
+        new()
+        {
+            Id = user.Id,
+            Username = user.Username,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Password = user.PasswordHash,
+            Role = user.Role.ToString()
+        };
 }

@@ -1,5 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserManagement.Application.Services;
@@ -23,12 +22,8 @@ public class ProfileController : ControllerBase
     public async Task<IActionResult> GetProfile()
     {
         var userId = GetUserIdFromToken();
-        if (userId == null)
-        {
-            return Unauthorized();
-        }
-
-        var user = await _userService.GetByIdAsync(userId.Value);
+        
+        var user = await _userService.GetByIdAsync(userId);
         if (user == null)
         {
             return NotFound();
@@ -40,12 +35,8 @@ public class ProfileController : ControllerBase
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserRequest request)
     {
         var userId = GetUserIdFromToken();
-        if (userId == null)
-        {
-            return Unauthorized();
-        }
         
-        var currentUser = await _userService.GetByIdAsync(userId.Value);
+        var currentUser = await _userService.GetByIdAsync(userId);
         if (currentUser == null)
             return NotFound();
 
@@ -60,14 +51,9 @@ public class ProfileController : ControllerBase
         return Ok(currentUser);
     }
 
-    private Guid? GetUserIdFromToken()
+    private Guid GetUserIdFromToken()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                          ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-        
-        if (Guid.TryParse(userIdClaim, out var userId))
-            return userId;
-
-        return null;
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Guid.Parse(userIdClaim);
     }
 }

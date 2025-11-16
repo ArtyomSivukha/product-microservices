@@ -1,6 +1,6 @@
 ﻿using UserManagement.Domain.Enums;
 
-namespace UserManagement.Domain.Entities;
+namespace UserManagement.Infrastructure.Database.Entities;
 
 public class User
 {

@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UserManagement.Application.Models;
 using UserManagement.Application.Services;
+using UserManagement.Domain.Users;
 
 
 namespace UserManagement.Web.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class RegisterController : ControllerBase
+public class SignUpController : ControllerBase
 {
     private readonly IUserService _userService;
 
-    public RegisterController(IUserService userService)
+    public SignUpController(IUserService userService)
     {
         _userService = userService;
     }
@@ -19,7 +19,7 @@ public class RegisterController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] UserModel userModel)
     {
-        var registerAuthor = await _userService.RegisterUserAsync(userModel);
+        var registerAuthor = await _userService.CreateUserAsync(userModel);
         return Ok(registerAuthor);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace UserManagement.Application.Models;
+﻿namespace UserManagement.Domain.Users;
 
 public class UserModel
 {
