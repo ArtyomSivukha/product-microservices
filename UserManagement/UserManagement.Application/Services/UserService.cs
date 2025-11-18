@@ -38,9 +38,15 @@ public class UserService : IUserService
         return userEntity;
     }
 
-    public Task<UserModel?> GetByEmailAsync(string email)
+    public async Task<UserModel?> GetByEmailAsync(string email)
     {
-        throw new NotImplementedException();
+        return await _userRepository.GetByEmailAsync(email);
+    }
+
+    public async Task<bool> IsEmailExitsAsync(string email)
+    {
+        var userEntity = await _userRepository.GetByEmailAsync(email);
+        return userEntity is not null;
     }
 
     public async Task<UserModel> CreateUserAsync(UserModel userModel)
@@ -51,7 +57,9 @@ public class UserService : IUserService
         }
 
         var hasher = new PasswordHasher<UserModel>();
-        userModel.Password = hasher.HashPassword(userModel, userModel.Password);
+        userModel.PasswordHash = hasher.HashPassword(userModel, userModel.PasswordHash);
+        // userModel.ConfirmPasswordHash = hasher.HashPassword(userModel, userModel.ConfirmPasswordHash);
+        userModel.ConfirmPasswordHash = userModel.PasswordHash;
     
         var createdUser = await _userRepository.CreateAsync(userModel);
     

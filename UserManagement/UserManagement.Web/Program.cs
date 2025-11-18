@@ -7,11 +7,15 @@ using UserManagement.Application.Services;
 using UserManagement.Domain.Repositories;
 using UserManagement.Infrastructure.Database;
 using UserManagement.Infrastructure.Repositories;
+using UserManagement.Web.Email;
 using UserManagement.Web.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+builder.Services.AddAutoMapper(typeof(Program)); 
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<UserDbContext>(options =>
 {
@@ -21,6 +25,11 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
+builder.Services.Configure<EmailConfiguration>(
+    builder.Configuration.GetSection("EmailConfiguration")
+);
 
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("Jwt")

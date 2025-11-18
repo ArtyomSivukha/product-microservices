@@ -12,7 +12,7 @@ using UserManagement.Infrastructure.Database;
 namespace UserManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20251116192828_Initial")]
+    [Migration("20251118075548_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -31,6 +31,10 @@ namespace UserManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ConfirmPasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
@@ -39,14 +43,15 @@ namespace UserManagement.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Modified")

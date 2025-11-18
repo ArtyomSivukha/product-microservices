@@ -9,6 +9,7 @@ public interface IUserService
     Task<UserModel?> GetByUsernameAsync(string username);
     Task<UserModel> CreateUserAsync(UserModel userModel);
     Task<UserModel?> GetByEmailAsync(string email);
+    Task<bool> IsEmailExitsAsync(string email);
     Task UpdateAsync(UserModel userModel);
     Task DeleteAsync(Guid id);
 

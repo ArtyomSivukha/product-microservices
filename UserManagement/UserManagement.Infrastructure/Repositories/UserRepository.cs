@@ -31,13 +31,25 @@ public class UserRepository : IUserRepository
     public async Task<UserModel?> GetByUsernameAsync(string username)
     {
         var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
-        return userEntity != null ? FromEntityToModel(userEntity) : null;
+        return userEntity is null ? null : FromEntityToModel(userEntity);
     }
 
-    public Task<UserModel> GetByEmailAsync(string email)
+    public async Task<UserModel?> GetByEmailAsync(string email)
     {
-        throw new NotImplementedException();
+        var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
+        return userEntity is null ? null : FromEntityToModel(userEntity);
     }
+
+    // public async Task<bool> IsEmailConfirmedAsync(UserModel userModel)
+    // {
+    //     var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == userModel.Email);
+    //     if (userEntity is null)
+    //     {
+    //         return false;
+    //     }
+    //
+    //     return true;
+    // }
 
     public async Task<UserModel> CreateAsync(UserModel user)
     {
@@ -56,8 +68,9 @@ public class UserRepository : IUserRepository
         }
         userEntity.FirstName = user.FirstName;
         userEntity.LastName = user.LastName;
-        userEntity.PasswordHash= user.Password;
-        userEntity.Email = user.Email;
+        userEntity.PasswordHash= user.PasswordHash;
+        userEntity.IsEmailConfirmed = user.IsEmailConfirmed;
+        // userEntity.Email = user.Email;
         await _dbContext.SaveChangesAsync();
     }
 
@@ -81,7 +94,8 @@ public class UserRepository : IUserRepository
             FirstName = userModel.FirstName,
             LastName = userModel.LastName,
             Email = userModel.Email,
-            PasswordHash = userModel.Password,
+            PasswordHash = userModel.PasswordHash,
+            ConfirmPasswordHash = userModel.ConfirmPasswordHash,
             Role = Enum.TryParse<UserRole>(userModel.Role, true, out var role) ? role : UserRole.User
         };
 
@@ -93,7 +107,8 @@ public class UserRepository : IUserRepository
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
-            Password = user.PasswordHash,
+            PasswordHash = user.PasswordHash,
+            ConfirmPasswordHash = user.ConfirmPasswordHash,
             Role = user.Role.ToString()
         };
 }
