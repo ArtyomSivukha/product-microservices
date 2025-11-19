@@ -1,6 +1,6 @@
 ﻿using MimeKit;
 
-namespace UserManagement.Web.Email;
+namespace UserManagement.Application;
 
 public class Message
 {

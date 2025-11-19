@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using UserManagement.Application;
+using UserManagement.Application.Security;
 using UserManagement.Application.Services;
 using UserManagement.Domain.Users;
-using UserManagement.Web.Email;
 using UserManagement.Web.Model;
-using UserManagement.Web.Security;
 
 namespace UserManagement.Web.Controllers;
 
@@ -27,7 +27,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
     {
-        var user = await _userService.GetByEmailAsync(request.Email);
+        var user = await _userService.GetUserByEmailAsync(request.Email);
         if (user is null)
         {
             return Unauthorized("Invalid credentials");

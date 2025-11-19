@@ -1,4 +1,4 @@
-﻿namespace UserManagement.Web.Email;
+﻿namespace UserManagement.Application;
 
 public interface IEmailSender
 {

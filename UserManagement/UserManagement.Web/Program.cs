@@ -3,18 +3,26 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using UserManagement.Application;
+using UserManagement.Application.LinkURI;
+using UserManagement.Application.Security;
 using UserManagement.Application.Services;
 using UserManagement.Domain.Repositories;
 using UserManagement.Infrastructure.Database;
+using UserManagement.Infrastructure.Email;
+using UserManagement.Infrastructure.Mapping;
 using UserManagement.Infrastructure.Repositories;
-using UserManagement.Web.Email;
-using UserManagement.Web.Security;
+using UserManagement.Web.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddAutoMapper(typeof(Program)); 
+builder.Services.AddAutoMapper(
+    typeof(UserProfile),
+    typeof(EmailConfirmProfile),
+    typeof(MappingSignUpProfile)
+);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<UserDbContext>(options =>
@@ -26,7 +34,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<ILinkService, LinkService>();
+builder.Services.AddScoped<IEmailConfirmRepository, EmailConfirmRepository>();
+builder.Services.AddScoped<IEmailConfirmService, EmailConfirmService>();
 
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings")
+);
 builder.Services.Configure<EmailConfiguration>(
     builder.Configuration.GetSection("EmailConfiguration")
 );

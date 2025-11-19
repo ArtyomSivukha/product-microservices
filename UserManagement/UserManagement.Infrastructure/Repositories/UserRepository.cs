@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using UserManagement.Domain.Enums;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using UserManagement.Domain.Repositories;
 using UserManagement.Domain.Users;
 using UserManagement.Infrastructure.Database;
@@ -10,34 +10,36 @@ namespace UserManagement.Infrastructure.Repositories;
 public class UserRepository : IUserRepository
 {
     private readonly UserDbContext _dbContext;
+    private readonly IMapper _mapper;
 
-    public UserRepository(UserDbContext dbContext)
+    public UserRepository(UserDbContext dbContext, IMapper mapper)
     {
         _dbContext = dbContext;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<UserModel>> GetAllAsync()
     {
         var users = await _dbContext.Users.ToArrayAsync();
-        return users.Select(FromEntityToModel);
+        return _mapper.Map<IEnumerable<UserModel>>(users);
     }
 
     public async Task<UserModel?> GetByIdAsync(Guid id)
     {
         var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
-        return userEntity is null ? null : FromEntityToModel(userEntity);
+        return userEntity is null ? null : _mapper.Map<UserModel>(userEntity);
     }
 
     public async Task<UserModel?> GetByUsernameAsync(string username)
     {
         var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
-        return userEntity is null ? null : FromEntityToModel(userEntity);
+        return userEntity is null ? null : _mapper.Map<UserModel>(userEntity);
     }
 
     public async Task<UserModel?> GetByEmailAsync(string email)
     {
         var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
-        return userEntity is null ? null : FromEntityToModel(userEntity);
+        return userEntity is null ? null : _mapper.Map<UserModel>(userEntity);
     }
 
     // public async Task<bool> IsEmailConfirmedAsync(UserModel userModel)
@@ -53,10 +55,10 @@ public class UserRepository : IUserRepository
 
     public async Task<UserModel> CreateAsync(UserModel user)
     {
-        var userEntity = FromModelToEntity(user);
+        var userEntity = _mapper.Map<User>(user);
         _dbContext.Users.Add(userEntity);
         await _dbContext.SaveChangesAsync();
-        return FromEntityToModel(userEntity);
+        return _mapper.Map<UserModel>(userEntity);
     }
 
     public async Task UpdateAsync(UserModel user)
@@ -69,6 +71,7 @@ public class UserRepository : IUserRepository
         userEntity.FirstName = user.FirstName;
         userEntity.LastName = user.LastName;
         userEntity.PasswordHash= user.PasswordHash;
+        userEntity.ConfirmPasswordHash= user.ConfirmPasswordHash;
         userEntity.IsEmailConfirmed = user.IsEmailConfirmed;
         // userEntity.Email = user.Email;
         await _dbContext.SaveChangesAsync();
@@ -85,30 +88,4 @@ public class UserRepository : IUserRepository
         _dbContext.Users.Remove(deleteUserEntity);
         await _dbContext.SaveChangesAsync();
     }
-    
-    private static User FromModelToEntity(UserModel userModel) =>
-        new()
-        {
-            Id = userModel.Id,
-            Username = userModel.Username,
-            FirstName = userModel.FirstName,
-            LastName = userModel.LastName,
-            Email = userModel.Email,
-            PasswordHash = userModel.PasswordHash,
-            ConfirmPasswordHash = userModel.ConfirmPasswordHash,
-            Role = Enum.TryParse<UserRole>(userModel.Role, true, out var role) ? role : UserRole.User
-        };
-
-    private static UserModel FromEntityToModel(User user) =>
-        new()
-        {
-            Id = user.Id,
-            Username = user.Username,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Email = user.Email,
-            PasswordHash = user.PasswordHash,
-            ConfirmPasswordHash = user.ConfirmPasswordHash,
-            Role = user.Role.ToString()
-        };
 }

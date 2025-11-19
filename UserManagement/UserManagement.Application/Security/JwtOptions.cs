@@ -1,4 +1,4 @@
-namespace UserManagement.Web.Security;
+namespace UserManagement.Application.Security;
 
 public class JwtOptions
 {

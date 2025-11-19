@@ -10,4 +10,5 @@ public class UserDbContext : DbContext
     }
     
     public DbSet<User> Users { get; set; }
+    public DbSet<EmailConfirm> EmailConfirmationTokens { get; set; }
 }

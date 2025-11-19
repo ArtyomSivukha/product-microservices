@@ -4,13 +4,13 @@ namespace UserManagement.Application.Services;
 
 public interface IUserService
 {
-    Task<IEnumerable<UserModel>> GetAllAsync();
-    Task<UserModel?> GetByIdAsync(Guid id);
-    Task<UserModel?> GetByUsernameAsync(string username);
+    Task<IEnumerable<UserModel>> GetAllUsersAsync();
+    Task<UserModel?> GetUserByIdAsync(Guid id);
+    Task<UserModel?> GetUserByUsernameAsync(string username);
     Task<UserModel> CreateUserAsync(UserModel userModel);
-    Task<UserModel?> GetByEmailAsync(string email);
+    Task<UserModel?> GetUserByEmailAsync(string email);
     Task<bool> IsEmailExitsAsync(string email);
-    Task UpdateAsync(UserModel userModel);
-    Task DeleteAsync(Guid id);
+    Task UpdateUserAsync(UserModel userModel);
+    Task DeleteUserAsync(Guid id);
 
 }

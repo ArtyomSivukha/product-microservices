@@ -1,4 +1,4 @@
-﻿namespace UserManagement.Web.Email;
+﻿namespace UserManagement.Infrastructure.Email;
 
 public class EmailConfiguration
 {

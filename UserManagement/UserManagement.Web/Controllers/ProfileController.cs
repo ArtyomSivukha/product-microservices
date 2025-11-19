@@ -23,7 +23,7 @@ public class ProfileController : ControllerBase
     {
         var userId = GetUserIdFromToken();
         
-        var user = await _userService.GetByIdAsync(userId);
+        var user = await _userService.GetUserByIdAsync(userId);
         if (user == null)
         {
             return NotFound();
@@ -36,7 +36,7 @@ public class ProfileController : ControllerBase
     {
         var userId = GetUserIdFromToken();
         
-        var currentUser = await _userService.GetByIdAsync(userId);
+        var currentUser = await _userService.GetUserByIdAsync(userId);
         if (currentUser == null)
             return NotFound();
 
@@ -46,7 +46,7 @@ public class ProfileController : ControllerBase
         if (request.LastName != null)
             currentUser.LastName = request.LastName;
             
-        await _userService.UpdateAsync(currentUser);
+        await _userService.UpdateUserAsync(currentUser);
 
         return Ok(currentUser);
     }
