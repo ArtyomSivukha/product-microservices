@@ -10,5 +10,9 @@ public class UserModel
     public bool IsEmailConfirmed { get; set; }
     public string PasswordHash { get; set; }
     public string ConfirmPasswordHash { get; set; }
-    public string Role { get; set; }   
+    public string Role { get; set; }
+    
+    public bool IsActive { get; set; }
+    public DateTime Created { get; set; } = DateTime.UtcNow;
+    public DateTime Modified { get; set; } = DateTime.UtcNow;
 }

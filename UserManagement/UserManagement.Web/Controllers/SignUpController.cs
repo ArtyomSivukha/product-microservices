@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using UserManagement.Application;
-using UserManagement.Application.Services;
-using UserManagement.Domain.Repositories;
+using UserManagement.Application.Services.EmailConfirmService;
+using UserManagement.Application.Services.UserService;
 using UserManagement.Domain.Users;
 using UserManagement.Web.Model;
 
@@ -43,27 +42,7 @@ public class SignUpController : ControllerBase
     {
         try
         {
-            var userId = await _emailConfirmService.GetUserIdByTokenAsync(token);
-            if (userId == null)
-            {
-                return BadRequest("Invalid or expired confirmation token");
-            }
-
-            var user = await _userService.GetUserByIdAsync(userId.Value);
-            if (user is null)
-            {
-                return BadRequest("User not found");
-            }
-            
-            if (user.IsEmailConfirmed)
-            {
-                return Ok(new { message = "Email is already confirmed" });
-            }
-        
-            user.IsEmailConfirmed = true;
-            await _userService.UpdateUserAsync(user);
-        
-            await _emailConfirmService.DeleteByUserIdAsync(user.Id);
+            await _userService.ConfirmUserAsync(token);
         
             return Ok(new { message = "Email confirmed successfully. You can now login." });
         }

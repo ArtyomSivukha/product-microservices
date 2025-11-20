@@ -1,4 +1,4 @@
-﻿namespace UserManagement.Application.Services;
+﻿namespace UserManagement.Application.Services.EmailConfirmService;
 
 public interface IEmailConfirmService
 {

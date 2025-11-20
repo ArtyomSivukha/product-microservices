@@ -1,6 +1,6 @@
 ﻿using UserManagement.Domain.Repositories;
 
-namespace UserManagement.Application.Services;
+namespace UserManagement.Application.Services.EmailConfirmService;
 
 public class EmailConfirmService : IEmailConfirmService
 {

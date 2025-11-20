@@ -6,7 +6,8 @@ using Microsoft.OpenApi.Models;
 using UserManagement.Application;
 using UserManagement.Application.LinkURI;
 using UserManagement.Application.Security;
-using UserManagement.Application.Services;
+using UserManagement.Application.Services.EmailConfirmService;
+using UserManagement.Application.Services.UserService;
 using UserManagement.Domain.Repositories;
 using UserManagement.Infrastructure.Database;
 using UserManagement.Infrastructure.Email;
@@ -38,7 +39,7 @@ builder.Services.AddScoped<ILinkService, LinkService>();
 builder.Services.AddScoped<IEmailConfirmRepository, EmailConfirmRepository>();
 builder.Services.AddScoped<IEmailConfirmService, EmailConfirmService>();
 
-builder.Services.Configure<EmailSettings>(
+builder.Services.Configure<Settings>(
     builder.Configuration.GetSection("EmailSettings")
 );
 builder.Services.Configure<EmailConfiguration>(

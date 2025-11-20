@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
 using UserManagement.Application.LinkURI;
 using UserManagement.Application.Security;
+using UserManagement.Application.Services.EmailConfirmService;
 using UserManagement.Domain.Repositories;
 using UserManagement.Domain.Users;
 
-namespace UserManagement.Application.Services;
+namespace UserManagement.Application.Services.UserService;
 
 public class UserService : IUserService
 {
@@ -55,6 +55,33 @@ public class UserService : IUserService
         return await _userRepository.GetByEmailAsync(email);
     }
 
+    public async Task SendEmailToResetPasswordAsync(string email)
+    {
+        var user = await _userRepository.GetByEmailAsync(email);
+        if (user is null)
+        {
+            throw new ArgumentNullException(nameof(user), $"{nameof(user)} is null");
+        }
+        
+        var token = _tokenService.GenerateEmailConfirmationToken(user);
+        
+        await _emailConfirmService.CreateEmailConfirmAsync(user.Id, token);
+        
+        user.IsActive = false;
+        
+        await UpdateUserAsync(user);
+        
+        var resetLink = _linkService.CreatePasswordResetLink(token);
+    
+        var message = new Message(
+                [user.Email], 
+                "Reset Your Password", 
+                $"Click here to reset your password: {resetLink}"
+        );
+    
+        await _emailSender.SendEmailAsync(message);
+    }
+
     public async Task<bool> IsEmailExitsAsync(string email)
     {
         var userEntity = await _userRepository.GetByEmailAsync(email);
@@ -99,6 +126,73 @@ public class UserService : IUserService
             throw new ArgumentNullException(nameof(userModel), $"{nameof(userModel)} is null");
         }
         await _userRepository.UpdateAsync(userModel);
+    }
+
+    
+    public async Task ConfirmUserAsync(string token)
+    {
+        var userId = await _emailConfirmService.GetUserIdByTokenAsync(token);
+        if (userId is null)
+        {
+            throw new Exception("Invalid token");
+        }
+
+        var user = await GetUserByIdAsync(userId.Value);
+        if (user is null)
+        {
+            throw new Exception("User not found");
+        }
+            
+        if (user.IsEmailConfirmed)
+        {
+            throw new Exception("Email is already confirmed");
+        }
+        
+        user.IsEmailConfirmed = true;
+        await UpdateUserAsync(user);
+        
+        await _emailConfirmService.DeleteByUserIdAsync(user.Id);
+        
+    }
+
+    public async Task ResetPasswordUserAsync(UserModel userModel, string token)
+    {
+        var userId = await _emailConfirmService.GetUserIdByTokenAsync(token);
+        if (userId is null)
+        {
+            throw new Exception("Invalid token");
+        }
+        
+        var user = await GetUserByIdAsync(userId.Value);
+        if (user is null)
+        {
+            throw new Exception("User not found");
+        }
+        
+        if (userModel.PasswordHash != userModel.ConfirmPasswordHash)
+        {
+            throw new Exception("Passwords do not match");
+        }
+        
+        if (user.PasswordHash == userModel.PasswordHash)
+        {
+            throw new Exception("Enter new password");
+        }
+        
+        var hasher = new PasswordHasher<UserModel>();
+        var passwordVerification = hasher.VerifyHashedPassword(user, user.PasswordHash, userModel.PasswordHash);
+        if (passwordVerification == PasswordVerificationResult.Success)
+        {
+            throw new Exception("New password must be different from current password");
+        }
+        
+        user.PasswordHash = hasher.HashPassword(userModel, userModel.PasswordHash);
+        user.ConfirmPasswordHash = user.PasswordHash;
+        user.IsActive = true;
+
+        await UpdateUserAsync(user);
+        
+        await _emailConfirmService.DeleteByUserIdAsync(user.Id);
     }
 
     public Task DeleteUserAsync(Guid id)

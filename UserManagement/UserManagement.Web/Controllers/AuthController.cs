@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using UserManagement.Application;
 using UserManagement.Application.Security;
 using UserManagement.Application.Services;
+using UserManagement.Application.Services.UserService;
 using UserManagement.Domain.Users;
 using UserManagement.Web.Model;
 
@@ -15,13 +17,13 @@ public class AuthController : ControllerBase
     private readonly IUserService _userService;
     private readonly ITokenService _tokenService;
     private readonly PasswordHasher<UserModel> _passwordHasher = new();
-    private readonly IEmailSender _emailSender;
+    private readonly IMapper _mapper;
 
-    public AuthController(ITokenService tokenService, IUserService userService, IEmailSender emailSender)
+    public AuthController(ITokenService tokenService, IUserService userService, IMapper mapper)
     {
         _userService = userService;
+        _mapper = mapper;
         _tokenService = tokenService;
-        _emailSender = emailSender;
     }
 
     [HttpPost("login")]
@@ -52,6 +54,40 @@ public class AuthController : ControllerBase
         catch (FormatException ex)
         {
             return StatusCode(500, "Authentication error");
+        }
+    }
+    
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO forgotPasswordDto)
+    {
+        var user = await _userService.GetUserByEmailAsync(forgotPasswordDto.Email);
+        if (user is null)
+        {
+            return BadRequest("Invalid Request");
+        }
+       
+        await _userService.SendEmailToResetPasswordAsync(user.Email);
+        return Ok();
+    }
+    
+    [HttpGet("reset-password")]
+    public async Task<IActionResult> ShowResetPasswordForm([FromQuery] string token)
+    {
+        return Ok(new { token = token, valid = true });
+    }
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromQuery] string token, [FromBody] ResetPasswordDTO resetPasswordDto)
+    {
+        try
+        {
+            var userModel = _mapper.Map<UserModel>(resetPasswordDto);
+            await _userService.ResetPasswordUserAsync(userModel, token);
+        
+            return Ok(new { message = "Password reset successfully. You can now login." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = $"Error resetting password: {ex.Message}" });
         }
     }
 }
