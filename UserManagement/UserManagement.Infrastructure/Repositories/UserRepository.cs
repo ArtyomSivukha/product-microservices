@@ -74,7 +74,7 @@ public class UserRepository : IUserRepository
         userEntity.ConfirmPasswordHash= user.ConfirmPasswordHash;
         userEntity.IsEmailConfirmed = user.IsEmailConfirmed;
         userEntity.IsActive = user.IsActive;
-        // userEntity.Email = user.Email;
+        userEntity.Modified = DateTime.Now;
         await _dbContext.SaveChangesAsync();
     }
 

@@ -108,6 +108,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") // React dev server
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -121,7 +134,7 @@ app.UseAuthentication();
 app.UseAuthorization(); 
 
 app.UseExceptionHandler();
-
+app.UseCors("ReactApp");
 
 app.MapControllers();
 app.Run();

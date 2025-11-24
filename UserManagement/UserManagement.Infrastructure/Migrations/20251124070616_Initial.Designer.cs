@@ -12,7 +12,7 @@ using UserManagement.Infrastructure.Database;
 namespace UserManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20251119074633_Initial")]
+    [Migration("20251124070616_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace UserManagement.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("UserManagement.Infrastructure.Database.Entities.EmailConfirmationToken", b =>
+            modelBuilder.Entity("UserManagement.Infrastructure.Database.Entities.EmailConfirm", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

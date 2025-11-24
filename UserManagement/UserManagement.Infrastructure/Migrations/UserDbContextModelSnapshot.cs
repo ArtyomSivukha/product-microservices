@@ -22,7 +22,7 @@ namespace UserManagement.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("UserManagement.Infrastructure.Database.Entities.EmailConfirmationToken", b =>
+            modelBuilder.Entity("UserManagement.Infrastructure.Database.Entities.EmailConfirm", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

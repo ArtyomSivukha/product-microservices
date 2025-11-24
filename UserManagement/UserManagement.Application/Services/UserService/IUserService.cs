@@ -15,5 +15,8 @@ public interface IUserService
     Task ConfirmUserAsync(string token);
     Task ResetPasswordUserAsync(UserModel userModel, string token);
     Task DeleteUserAsync(Guid id);
+    
+    Task ActivateUserAsync(Guid userId);
+    Task DeactivateUserAsync(Guid userId);
 
 }

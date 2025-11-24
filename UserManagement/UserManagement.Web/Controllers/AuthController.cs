@@ -35,6 +35,11 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid credentials");
         }
 
+        if (user.IsActive == false)
+        {
+            return Unauthorized("User is deactivated");
+        }
+        
         if (user.IsEmailConfirmed == false)
         {
             return Unauthorized("Email is not confirmed");
@@ -75,6 +80,7 @@ public class AuthController : ControllerBase
     {
         return Ok(new { token = token, valid = true });
     }
+    
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromQuery] string token, [FromBody] ResetPasswordDTO resetPasswordDto)
     {
