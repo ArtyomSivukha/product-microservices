@@ -6,24 +6,21 @@ using Microsoft.OpenApi.Models;
 using UserManagement.Application;
 using UserManagement.Application.LinkURI;
 using UserManagement.Application.Products;
-using UserManagement.Application.Security;
 using UserManagement.Application.Services.EmailConfirmService;
 using UserManagement.Application.Services.UserService;
 using UserManagement.Domain.Repositories;
 using UserManagement.Infrastructure.Database;
 using UserManagement.Infrastructure.Email;
-using UserManagement.Infrastructure.Mapping;
+using UserManagement.Infrastructure.Products;
 using UserManagement.Infrastructure.Repositories;
-using UserManagement.Web.Mapping;
+using UserManagement.Web.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
 builder.Services.AddAutoMapper(
-    typeof(UserProfile),
-    typeof(EmailConfirmProfile),
-    typeof(MappingSignUpProfile)
+    AppDomain.CurrentDomain.GetAssemblies()
 );
 builder.Services.AddControllersWithViews();
 
@@ -37,7 +34,6 @@ builder.Services.AddHttpClient("ProductService", client =>
 {
     client.BaseAddress = new Uri(productServiceUrl);
 });
-
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -47,7 +43,8 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<ILinkService, LinkService>();
 builder.Services.AddScoped<IEmailConfirmRepository, EmailConfirmRepository>();
 builder.Services.AddScoped<IEmailConfirmService, EmailConfirmService>();
-builder.Services.AddScoped<ProductServiceClient>();
+builder.Services.AddScoped<ICurrentUserAccessor, CurrentUserAccessor>();
+builder.Services.AddScoped<IProductServiceClient, ProductServiceClient>();
 
 builder.Services.Configure<Settings>(
     builder.Configuration.GetSection("EmailSettings")

@@ -17,8 +17,6 @@ public class EmailConfirmRepository : IEmailConfirmRepository
 
     public async Task CreateAsync(Guid userId, string token)
     {
-        // await DeleteByUserIdAsync(userId);
-        
         var emailToken = new EmailConfirm
         {
             Id = Guid.NewGuid(),

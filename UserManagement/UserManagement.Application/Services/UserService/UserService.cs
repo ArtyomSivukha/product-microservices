@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using UserManagement.Application.LinkURI;
 using UserManagement.Application.Products;
-using UserManagement.Application.Security;
 using UserManagement.Application.Services.EmailConfirmService;
 using UserManagement.Domain.Repositories;
 using UserManagement.Domain.Users;
@@ -12,23 +10,22 @@ namespace UserManagement.Application.Services.UserService;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
-    private readonly ITokenService _tokenService;
     private readonly IEmailSender _emailSender;
     private readonly ILinkService _linkService;
     private readonly IEmailConfirmService _emailConfirmService;
-    private readonly ProductServiceClient _productServiceClient;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IProductServiceClient _productServiceClient;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
 
-    public UserService(IUserRepository userRepository, ITokenService tokenService, IEmailSender emailSender,
-        ILinkService linkService, IEmailConfirmService emailConfirmService, ProductServiceClient productServiceClient, IHttpContextAccessor httpContextAccessor)
+    public UserService(IUserRepository userRepository, IEmailSender emailSender,
+        ILinkService linkService, IEmailConfirmService emailConfirmService,
+        IProductServiceClient productServiceClient, ICurrentUserAccessor currentUserAccessor)
     {
         _userRepository = userRepository;
-        _tokenService = tokenService;
         _emailSender = emailSender;
         _linkService = linkService;
         _emailConfirmService = emailConfirmService;
         _productServiceClient = productServiceClient;
-        _httpContextAccessor = httpContextAccessor;
+        _currentUserAccessor = currentUserAccessor;
     }
 
     public async Task<IEnumerable<UserModel>> GetAllUsersAsync()
@@ -85,7 +82,7 @@ public class UserService : IUserService
         
         var createdUser = await _userRepository.CreateAsync(userModel);
 
-        var token = _tokenService.GenerateEmailConfirmationToken(createdUser);
+        var token = Guid.NewGuid().ToString();
 
         await _emailConfirmService.CreateEmailConfirmAsync(createdUser.Id, token);
 
@@ -98,8 +95,6 @@ public class UserService : IUserService
         );
 
         await _emailSender.SendEmailAsync(message);
-
-        // resultModel.PasswordHash = null;
         return createdUser;
     }
 
@@ -147,7 +142,7 @@ public class UserService : IUserService
             throw new ArgumentNullException(nameof(user), $"{nameof(user)} is null");
         }
 
-        var token = _tokenService.GenerateEmailConfirmationToken(user);
+        var token = Guid.NewGuid().ToString();
 
         await _emailConfirmService.CreateEmailConfirmAsync(user.Id, token);
 
@@ -221,17 +216,8 @@ public class UserService : IUserService
         user.IsActive = true;
 
         await UpdateUserAsync(user);
-        var token = GetAccessToken();
+        var token = _currentUserAccessor.UserToken;
         await _productServiceClient.ShowProductsByUserAsync(userId, token);
-    }
-    
-    
-    private string? GetAccessToken()
-    {
-        return _httpContextAccessor.HttpContext?
-            .Request.Headers["Authorization"]
-            .ToString()
-            .Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task DeactivateUserAsync(Guid userId)
@@ -245,7 +231,7 @@ public class UserService : IUserService
         user.IsActive = false;
 
         await UpdateUserAsync(user);
-        var token = GetAccessToken();
+        var token = _currentUserAccessor.UserToken;
         await _productServiceClient.HideProductsByUserAsync(userId, token);
     }
 }

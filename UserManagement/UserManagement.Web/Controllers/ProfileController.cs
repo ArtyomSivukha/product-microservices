@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UserManagement.Application;
 using UserManagement.Application.Services;
 using UserManagement.Application.Services.UserService;
 using UserManagement.Web.Model;
@@ -13,17 +14,18 @@ namespace UserManagement.Web.Controllers;
 public class ProfileController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
 
-    public ProfileController(IUserService userService)
+    public ProfileController(IUserService userService, ICurrentUserAccessor currentUserAccessor)
     {
         _userService = userService;
+        _currentUserAccessor = currentUserAccessor;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetProfile()
     {
-        var userId = GetUserIdFromToken();
-        
+        var userId = _currentUserAccessor.UserId;
         var user = await _userService.GetUserByIdAsync(userId);
         if (user == null)
         {
@@ -35,8 +37,7 @@ public class ProfileController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserRequest request)
     {
-        var userId = GetUserIdFromToken();
-        
+        var userId = _currentUserAccessor.UserId;
         var currentUser = await _userService.GetUserByIdAsync(userId);
         if (currentUser == null)
             return NotFound();
@@ -50,11 +51,5 @@ public class ProfileController : ControllerBase
         await _userService.UpdateUserAsync(currentUser);
 
         return Ok(currentUser);
-    }
-
-    private Guid GetUserIdFromToken()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.Parse(userIdClaim);
     }
 }

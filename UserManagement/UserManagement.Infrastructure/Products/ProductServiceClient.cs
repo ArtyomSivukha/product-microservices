@@ -1,15 +1,18 @@
-﻿namespace UserManagement.Application.Products;
+﻿using UserManagement.Application.Products;
 
-public class ProductServiceClient
+namespace UserManagement.Infrastructure.Products;
+
+public class ProductServiceClient : IProductServiceClient
 {
-    private readonly HttpClient _httpClient;
-
+    private const string ClientName = "ProductService";
+    private readonly IHttpClientFactory _clientFactory;
+    
     public ProductServiceClient(IHttpClientFactory httpClientFactory)
     {
-        _httpClient = httpClientFactory.CreateClient("ProductService");
+        _clientFactory = httpClientFactory;
     }
 
-    public async Task HideProductsByUserAsync(Guid userId, string? bearerToken = null)
+    public async Task HideProductsByUserAsync(Guid userId, string? bearerToken)
     {
         var request = new HttpRequestMessage(
               HttpMethod.Post, 
@@ -20,12 +23,13 @@ public class ProductServiceClient
             request.Headers.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
         }
-
-        var response = await _httpClient.SendAsync(request);
+        
+        using var client = _clientFactory.CreateClient(ClientName);
+        var response = await client.SendAsync(request);
         response.EnsureSuccessStatusCode();
     }
     
-    public async Task ShowProductsByUserAsync(Guid userId, string? bearerToken = null)
+    public async Task ShowProductsByUserAsync(Guid userId, string? bearerToken)
     {
         var request = new HttpRequestMessage(
             HttpMethod.Post, 
@@ -37,7 +41,8 @@ public class ProductServiceClient
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
         }
 
-        var response = await _httpClient.SendAsync(request);
+        using var client = _clientFactory.CreateClient(ClientName);
+        var response = await client.SendAsync(request);
         response.EnsureSuccessStatusCode();
     }
 }

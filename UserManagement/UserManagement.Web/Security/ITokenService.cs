@@ -1,9 +1,8 @@
 using UserManagement.Domain.Users;
 
-namespace UserManagement.Application.Security;
+namespace UserManagement.Web.Security;
 
 public interface ITokenService
 {
     string GenerateToken(UserModel user);
-    string GenerateEmailConfirmationToken(UserModel user);
 }

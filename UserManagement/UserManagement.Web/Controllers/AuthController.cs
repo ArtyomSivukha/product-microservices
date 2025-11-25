@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using UserManagement.Application;
-using UserManagement.Application.Security;
 using UserManagement.Application.Services;
 using UserManagement.Application.Services.UserService;
 using UserManagement.Domain.Users;
 using UserManagement.Web.Model;
+using UserManagement.Web.Security;
 
 namespace UserManagement.Web.Controllers;
 

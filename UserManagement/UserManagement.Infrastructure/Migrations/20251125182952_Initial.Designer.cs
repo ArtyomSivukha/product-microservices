@@ -12,7 +12,7 @@ using UserManagement.Infrastructure.Database;
 namespace UserManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20251124070616_Initial")]
+    [Migration("20251125182952_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -39,6 +39,8 @@ namespace UserManagement.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("EmailConfirmationTokens");
                 });
@@ -89,6 +91,17 @@ namespace UserManagement.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("UserManagement.Infrastructure.Database.Entities.EmailConfirm", b =>
+                {
+                    b.HasOne("UserManagement.Infrastructure.Database.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }
