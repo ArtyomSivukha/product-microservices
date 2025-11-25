@@ -21,7 +21,7 @@ public class EmailConfirmService : IEmailConfirmService
         return await _emailConfirmRepository.GetUserIdByTokenAsync(token);
     }
 
-    public async Task DeleteByUserIdAsync(Guid userId)
+    public async Task DeleteTokenByUserIdAsync(Guid userId)
     {
         await _emailConfirmRepository.DeleteByUserIdAsync(userId);
     }

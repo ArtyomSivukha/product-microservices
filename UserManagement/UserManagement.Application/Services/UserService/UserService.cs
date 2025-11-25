@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using UserManagement.Application.LinkURI;
+using UserManagement.Application.Products;
 using UserManagement.Application.Security;
 using UserManagement.Application.Services.EmailConfirmService;
 using UserManagement.Domain.Repositories;
@@ -14,15 +16,19 @@ public class UserService : IUserService
     private readonly IEmailSender _emailSender;
     private readonly ILinkService _linkService;
     private readonly IEmailConfirmService _emailConfirmService;
+    private readonly ProductServiceClient _productServiceClient;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public UserService(IUserRepository userRepository, ITokenService tokenService, IEmailSender emailSender,
-        ILinkService linkService, IEmailConfirmService emailConfirmService)
+        ILinkService linkService, IEmailConfirmService emailConfirmService, ProductServiceClient productServiceClient, IHttpContextAccessor httpContextAccessor)
     {
         _userRepository = userRepository;
         _tokenService = tokenService;
         _emailSender = emailSender;
         _linkService = linkService;
         _emailConfirmService = emailConfirmService;
+        _productServiceClient = productServiceClient;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<IEnumerable<UserModel>> GetAllUsersAsync()
@@ -130,7 +136,7 @@ public class UserService : IUserService
         user.IsActive = true;
         await UpdateUserAsync(user);
 
-        await _emailConfirmService.DeleteByUserIdAsync(user.Id);
+        await _emailConfirmService.DeleteTokenByUserIdAsync(user.Id);
     }
     
     public async Task SendEmailToResetPasswordAsync(string email)
@@ -196,7 +202,7 @@ public class UserService : IUserService
         user.IsActive = true;
         await UpdateUserAsync(user);
 
-        await _emailConfirmService.DeleteByUserIdAsync(user.Id);
+        await _emailConfirmService.DeleteTokenByUserIdAsync(user.Id);
     }
 
     public Task DeleteUserAsync(Guid id)
@@ -211,10 +217,21 @@ public class UserService : IUserService
         {
             throw new Exception("User not found");
         }
-        
+
         user.IsActive = true;
 
         await UpdateUserAsync(user);
+        var token = GetAccessToken();
+        await _productServiceClient.ShowProductsByUserAsync(userId, token);
+    }
+    
+    
+    private string? GetAccessToken()
+    {
+        return _httpContextAccessor.HttpContext?
+            .Request.Headers["Authorization"]
+            .ToString()
+            .Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task DeactivateUserAsync(Guid userId)
@@ -228,5 +245,7 @@ public class UserService : IUserService
         user.IsActive = false;
 
         await UpdateUserAsync(user);
+        var token = GetAccessToken();
+        await _productServiceClient.HideProductsByUserAsync(userId, token);
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UserManagement.Application;
 using UserManagement.Application.LinkURI;
+using UserManagement.Application.Products;
 using UserManagement.Application.Security;
 using UserManagement.Application.Services.EmailConfirmService;
 using UserManagement.Application.Services.UserService;
@@ -31,6 +32,14 @@ builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("UserDbContext"));
 });
 
+var productServiceUrl = builder.Configuration["Services:ProductServiceUrl"];
+builder.Services.AddHttpClient("ProductService", client =>
+{
+    client.BaseAddress = new Uri(productServiceUrl);
+});
+
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -38,6 +47,7 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<ILinkService, LinkService>();
 builder.Services.AddScoped<IEmailConfirmRepository, EmailConfirmRepository>();
 builder.Services.AddScoped<IEmailConfirmService, EmailConfirmService>();
+builder.Services.AddScoped<ProductServiceClient>();
 
 builder.Services.Configure<Settings>(
     builder.Configuration.GetSection("EmailSettings")
