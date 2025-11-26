@@ -14,6 +14,14 @@ public class UserAccessorMiddleware
 
     public async Task InvokeAsync(HttpContext context, ICurrentUserAccessor accessor)
     {
+        if (context.User.Identity.IsAuthenticated != true)
+        {
+            (accessor as CurrentUserAccessor)!.UserId = Guid.Empty;
+            (accessor as CurrentUserAccessor)!.UserToken = null;
+            await next(context);
+            return;
+        }
+
         var token = context
             .Request.Headers["Authorization"]
             .ToString()

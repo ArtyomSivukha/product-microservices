@@ -138,7 +138,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 app.UseAuthentication(); 
-app.UseAuthorization(); 
+app.UseAuthorization();
+app.UseMiddleware<UserAccessorMiddleware>();
 
 app.UseExceptionHandler();
 app.UseCors("ReactApp");
