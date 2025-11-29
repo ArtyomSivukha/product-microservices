@@ -9,6 +9,7 @@ using ProductManagement.Domain.Repositories;
 using ProductManagement.Infrastructure.Database;
 using ProductManagement.Infrastructure.Mapping;
 using ProductManagement.Infrastructure.Repositories;
+using ProductManagement.Web;
 using ProductManagement.Web.Mapping;
 
 
@@ -99,11 +100,13 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+app.MigrateDatabase();
+
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseRouting();
 app.UseAuthentication();

@@ -1,0 +1,54 @@
+﻿services:
+  usermanagement:
+    build:
+      context: ./UserManagement
+      dockerfile: ./Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:5255
+    depends_on:
+      postgres_user:
+        condition: service_healthy
+    ports:
+      - "5255:5255"
+  
+  productmanagement:
+    build:
+      context: ./ProductManagement
+      dockerfile: ./Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:5011
+    depends_on:
+      postgres_product:
+        condition: service_healthy
+    ports:
+      - "5011:5011"
+  
+  postgres_user:
+    image: postgres:15
+    container_name: postgres_user
+    environment:
+      POSTGRES_DB: UserManagement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+  
+  postgres_product:
+    image: postgres:15
+    container_name: postgres_product
+    environment:
+      POSTGRES_DB: ProductManagement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 10s
+      retries: 6

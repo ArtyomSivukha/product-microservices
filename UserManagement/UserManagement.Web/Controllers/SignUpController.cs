@@ -26,7 +26,7 @@ public class SignUpController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] SignUpUserRequest signUpUserRequest)
     {
-        var existEmail = await _userService.GetUserByEmailAsync(signUpUserRequest.Email); // add exists method 
+        var existEmail = await _userService.GetUserByEmailAsync(signUpUserRequest.Email); 
         if (existEmail is not null)
         {
             return BadRequest("Email already exists");

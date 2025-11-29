@@ -13,6 +13,7 @@ using UserManagement.Infrastructure.Database;
 using UserManagement.Infrastructure.Email;
 using UserManagement.Infrastructure.Products;
 using UserManagement.Infrastructure.Repositories;
+using UserManagement.Web;
 using UserManagement.Web.Security;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -130,11 +131,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+app.MigrateDatabase();
+
+// if (app.Environment.IsDevelopment())
+// {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+// }
 
 app.UseRouting();
 app.UseAuthentication(); 

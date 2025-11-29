@@ -4,7 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductManagement.Web", "Pr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{96A05F4F-2B22-4A2F-855B-292B9AA3DD59}"
 	ProjectSection(SolutionItems) = preProject
-		compose.yaml = compose.yaml
+		Dockerfile = Dockerfile
+		..\compose.yaml = ..\compose.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductManagement.Domain", "ProductManagement.Domain\ProductManagement.Domain.csproj", "{3D43F282-B830-47FF-9D73-72CAA925A05B}"
