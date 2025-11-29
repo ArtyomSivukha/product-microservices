@@ -1,7 +1,21 @@
 ﻿services:
   usermanagement:
-    image: usermanagement
     build:
       context: .
-      dockerfile: UserManagement/Dockerfile
-
+      dockerfile: UserManagement.Web/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:5255
+    depends_on:
+      - postgres
+    ports:
+      - "5255:5255"
+  
+  postgres:
+    image: postgres:15
+    container_name: postgres_user_management
+    environment:
+      POSTGRES_DB: UserManagement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+    ports:
+      - "5433:5432"

@@ -1,0 +1,7 @@
+﻿services:
+  productmanagement:
+    image: productmanagement
+    build:
+      context: .
+      dockerfile: ProductManagement/Dockerfile
+
