@@ -80,6 +80,10 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(userModel.PasswordHash))
             throw new ArgumentNullException(nameof(userModel.PasswordHash), $"{nameof(userModel.PasswordHash)} is null or empty");
 
+        if (userModel.PasswordHash != userModel.ConfirmPasswordHash)
+        {
+            throw new ArgumentException("Passwords do not match");
+        }
         var hasher = new PasswordHasher<UserModel>();
         userModel.PasswordHash = hasher.HashPassword(userModel, userModel.PasswordHash);
         userModel.ConfirmPasswordHash = userModel.PasswordHash;

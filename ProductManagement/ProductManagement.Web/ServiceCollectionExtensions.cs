@@ -38,7 +38,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "User Management API", Version = "v1" });
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Product Management API", Version = "v1" });
     
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {

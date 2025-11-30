@@ -55,6 +55,7 @@ public class ProductService : IProductService
     public async Task UpdateAsync(ProductModel productModel)
     {
         await EnsureActiveUserAsync(productModel.UserId);
+        productModel.IsAvailable = true;
         await _productRepository.UpdateProductAsync(productModel);
     }
 
