@@ -1,25 +1,18 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using ProductManagement.Application.Services;
 using ProductManagement.Application.Users;
 using ProductManagement.Domain.Repositories;
 using ProductManagement.Infrastructure.Database;
-using ProductManagement.Infrastructure.Mapping;
 using ProductManagement.Infrastructure.Repositories;
 using ProductManagement.Web;
-using ProductManagement.Web.Mapping;
+using ProductManagement.Web.Exceptions;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(
-    typeof(ProductProfile),
-    typeof(MappingCreateProduct),
-    typeof(MappingUpdateProduct)
+    AppDomain.CurrentDomain.GetAssemblies()
 );
 
 builder.Services.AddDbContext<ProductDbContext>(options =>
@@ -27,76 +20,23 @@ builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("ProductDbContext"));
 });
 
-var userServiceUrl = builder.Configuration["Services:UserServiceUrl"];
-builder.Services.AddHttpClient("UserService", client =>
-{
-    client.BaseAddress = new Uri(userServiceUrl);
-});
-
-builder.Services.AddHttpContextAccessor();
-
-
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
-
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
-        };
-    });
-
+builder.Services.AddUserHttpClient(builder.Configuration);
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<UserServiceClient>();
 
+builder.Services.AddHttpContextAccessor();
 
-// builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddAuthentication(builder.Configuration);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "User Management API", Version = "v1" });
-    
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
-});
+builder.Services.AddSwagger();
 
 var app = builder.Build();
 

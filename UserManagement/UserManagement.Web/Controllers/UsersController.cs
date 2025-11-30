@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserManagement.Application.Services.UserService;
 using UserManagement.Domain.Users;
+using UserManagement.Web.Model;
 
 namespace UserManagement.Web.Controllers;
 
@@ -10,31 +12,35 @@ namespace UserManagement.Web.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IMapper _mapper;
 
-    public UsersController(IUserService userService)
+    public UsersController(IUserService userService, IMapper mapper)
     {
         _userService = userService;
+        _mapper = mapper;
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAllUsersAsync()
     {
         var users = await _userService.GetAllUsersAsync();
-        return Ok(users);
+        return Ok(_mapper.Map<IEnumerable<UserAdminResponse>>(users));
     }
     
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetAuthorByIdAsync(Guid id)
     {
         var user = await _userService.GetUserByIdAsync(id);
-        return Ok(user);
+        return Ok(_mapper.Map<UserResponse>(user));
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateAuthorsAsync(UserModel userModel)
     {
         var createdAuthor = await _userService.CreateUserAsync(userModel);
-        return Ok(createdAuthor);
+        return Ok(_mapper.Map<UserAdminResponse>(createdAuthor));
     }
     
     [HttpPost("{id:guid}/activate")]
@@ -42,7 +48,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> ActivateUser(Guid id)
     {
         await _userService.ActivateUserAsync(id);
-        return NoContent();
+        return Ok();
     }
 
     [HttpPost("{id:guid}/deactivate")]
@@ -50,6 +56,6 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> DeactivateUser(Guid id)
     {
         await _userService.DeactivateUserAsync(id);
-        return NoContent();
+        return Ok();
     }
 }

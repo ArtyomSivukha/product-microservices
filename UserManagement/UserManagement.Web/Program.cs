@@ -1,8 +1,4 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using UserManagement.Application;
 using UserManagement.Application.LinkURI;
 using UserManagement.Application.Products;
@@ -14,12 +10,12 @@ using UserManagement.Infrastructure.Email;
 using UserManagement.Infrastructure.Products;
 using UserManagement.Infrastructure.Repositories;
 using UserManagement.Web;
+using UserManagement.Web.Exceptions;
 using UserManagement.Web.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-
 builder.Services.AddAutoMapper(
     AppDomain.CurrentDomain.GetAssemblies()
 );
@@ -30,12 +26,7 @@ builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("UserDbContext"));
 });
 
-var productServiceUrl = builder.Configuration["Services:ProductServiceUrl"];
-builder.Services.AddHttpClient("ProductService", client =>
-{
-    client.BaseAddress = new Uri(productServiceUrl);
-});
-builder.Services.AddHttpContextAccessor();
+builder.Services.AddProductHttpClient(builder.Configuration);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -58,64 +49,12 @@ builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("Jwt")
 );
 
-var jwtSection = builder.Configuration.GetSection("Jwt");
-var jwtOptions = jwtSection.Get<JwtOptions>();
+builder.Services.AddAuthentication(builder.Configuration);
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtOptions.Issuer,
-            ValidAudience = jwtOptions.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtOptions.Key))
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-// builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "User Management API", Version = "v1" });
-    
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            []
-        }
-    });
-});
-
+builder.Services.AddSwagger();
 
 builder.Services.AddCors(options =>
 {

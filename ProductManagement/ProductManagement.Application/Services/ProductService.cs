@@ -42,11 +42,6 @@ public class ProductService : IProductService
         return products;
     }
 
-    public Task<ProductModel?> GetByNameAsync(string username)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<ProductModel> CreateProductAsync(ProductModel productModel)
     {
         await EnsureActiveUserAsync(productModel.UserId);

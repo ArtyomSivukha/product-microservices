@@ -67,7 +67,7 @@ public class ProductRepository : IProductRepository
        productEntity.Name = product.Name;
        productEntity.Price = product.Price;
        productEntity.Description = product.Description;
-       productEntity.UpdatedAt = DateTime.Now;
+       productEntity.UpdatedAt = DateTime.UtcNow;
        productEntity.IsAvailable = product.IsAvailable;
        await _dbContext.SaveChangesAsync();
     }

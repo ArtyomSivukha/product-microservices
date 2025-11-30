@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductManagement.Application.Services;
 using ProductManagement.Domain.Models;
 using ProductManagement.Web.ModelsDTO;
+using AccessViolationException = ProductManagement.Application.Exceptions.AccessViolationException;
 
 namespace ProductManagement.Web.Controllers;
 
@@ -53,14 +54,15 @@ public class ProductsController : ControllerBase
 
         var existing = await _productService.GetByIdAsync(id);
         if (existing is null)
-            return NotFound();
+            throw new ArgumentNullException(nameof(id), "Product not found");
 
         if (existing.UserId != userId)
-            return Forbid(); // 403
+            throw new AccessViolationException("This product can be edited only by owner");
 
         var model = _mapper.Map<ProductModel>(request);
 
-
+        model.Id = id;
+        model.UserId = userId;
         model.Name = request.Name ?? model.Name;
         model.Description = request.Description ?? model.Description;
         model.Price = request.Price ?? model.Price;
@@ -77,7 +79,7 @@ public class ProductsController : ControllerBase
 
         await _productService.DeleteAsync(id, userId);
 
-        return NoContent();
+        return Ok();
     }
     
     [HttpGet("search")]
@@ -99,12 +101,13 @@ public class ProductsController : ControllerBase
         var products = await _productService.GetAllAsync();
         return Ok(products);
     }
+    
     [HttpPost("hide/by-user/{userId:guid}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> HideByUser(Guid userId)
     {
         await _productService.HideByUserIdAsync(userId);
-        return NoContent();
+        return Ok();
     }
     
     [HttpPost("show/by-user/{userId:guid}")]
@@ -112,6 +115,6 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> ShowByUser(Guid userId)
     {
         await _productService.ShowByUserIdAsync(userId);
-        return NoContent();
+        return Ok();
     }
 }

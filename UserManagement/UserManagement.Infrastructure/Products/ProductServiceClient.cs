@@ -1,4 +1,5 @@
-﻿using UserManagement.Application.Products;
+﻿using UserManagement.Application.Exceptions;
+using UserManagement.Application.Products;
 
 namespace UserManagement.Infrastructure.Products;
 
@@ -25,8 +26,17 @@ public class ProductServiceClient : IProductServiceClient
         }
         
         using var client = _clientFactory.CreateClient(ClientName);
-        var response = await client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+
+        try
+        {
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            throw new ExternalServiceAvailabilityException();
+        }
+        
     }
     
     public async Task ShowProductsByUserAsync(Guid userId, string? bearerToken)
@@ -42,7 +52,15 @@ public class ProductServiceClient : IProductServiceClient
         }
 
         using var client = _clientFactory.CreateClient(ClientName);
-        var response = await client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            throw new ExternalServiceAvailabilityException();
+        }
+        
     }
 }

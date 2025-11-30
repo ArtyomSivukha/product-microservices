@@ -72,6 +72,13 @@ public class UserService : IUserService
         {
             throw new ArgumentNullException(nameof(userModel), $"{nameof(userModel)} is null");
         }
+        
+        if (string.IsNullOrWhiteSpace(userModel.Username))
+            throw new ArgumentNullException(nameof(userModel.Username), $"{nameof(userModel.Username)} is null or empty");
+        if (string.IsNullOrWhiteSpace(userModel.Email))
+            throw new ArgumentNullException(nameof(userModel.Email), $"{nameof(userModel.Email)} is null or empty");
+        if (string.IsNullOrWhiteSpace(userModel.PasswordHash))
+            throw new ArgumentNullException(nameof(userModel.PasswordHash), $"{nameof(userModel.PasswordHash)} is null or empty");
 
         var hasher = new PasswordHasher<UserModel>();
         userModel.PasswordHash = hasher.HashPassword(userModel, userModel.PasswordHash);
@@ -216,6 +223,7 @@ public class UserService : IUserService
         user.IsActive = true;
 
         await UpdateUserAsync(user);
+        
         var token = _currentUserAccessor.UserToken;
         await _productServiceClient.ShowProductsByUserAsync(userId, token);
     }

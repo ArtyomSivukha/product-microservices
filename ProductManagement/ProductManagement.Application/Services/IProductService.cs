@@ -8,7 +8,6 @@ public interface IProductService
 
     Task<IEnumerable<ProductModel>> GetByUserIdAsync(Guid userId);
     Task<ProductModel?> GetByIdAsync(Guid id);
-    Task<ProductModel?> GetByNameAsync(string username);
     Task<ProductModel> CreateProductAsync(ProductModel productModel);
     Task UpdateAsync(ProductModel productModel);
     Task DeleteAsync(Guid productId, Guid currentUserId);

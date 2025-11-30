@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using UserManagement.Application.Services.EmailConfirmService;
 using UserManagement.Application.Services.UserService;
 using UserManagement.Domain.Users;
 using UserManagement.Web.Model;
@@ -14,13 +13,11 @@ public class SignUpController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
-    private readonly IEmailConfirmService _emailConfirmService;
     
-    public SignUpController(IUserService userService, IMapper mapper, IEmailConfirmService emailConfirmService)
+    public SignUpController(IUserService userService, IMapper mapper)
     {
         _userService = userService;
         _mapper = mapper;
-        _emailConfirmService = emailConfirmService;
     }
     
     [HttpPost]
@@ -33,8 +30,8 @@ public class SignUpController : ControllerBase
         }
         
         var userModel = _mapper.Map<UserModel>(signUpUserRequest);
-        var registerAuthor = await _userService.CreateUserAsync(userModel);
-        return Ok(registerAuthor);
+        await _userService.CreateUserAsync(userModel);
+        return Ok();
     }
     
     [HttpGet("confirm-email")]
