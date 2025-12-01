@@ -10,8 +10,7 @@ public class User
     public string? LastName { get; set; }
     public string Email { get; set; }
     public bool IsEmailConfirmed { get; set; } = false;
-    public string PasswordHash { get; set; }
-    public string ConfirmPasswordHash  {get; set; }
+    public string Password{ get; set; }
     public UserRole Role { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime Created { get; set; } = DateTime.UtcNow;

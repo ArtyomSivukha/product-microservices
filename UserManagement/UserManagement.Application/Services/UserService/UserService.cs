@@ -36,11 +36,6 @@ public class UserService : IUserService
     public async Task<UserModel?> GetUserByIdAsync(Guid id)
     {
         var userEntity = await _userRepository.GetByIdAsync(id);
-        // if (userEntity is null)
-        // {
-        //     throw new ArgumentNullException(nameof(userEntity), $"{nameof(userEntity)} is null");
-        // }
-
         return userEntity;
     }
 
@@ -65,6 +60,21 @@ public class UserService : IUserService
         var userEntity = await _userRepository.GetByEmailAsync(email);
         return userEntity is not null;
     }
+    
+    public async Task<UserModel> RegisterUserAsync(UserModel userModel, string confirmPassword)
+    {
+        if (string.IsNullOrWhiteSpace(confirmPassword))
+        {
+            throw new ArgumentNullException(nameof(confirmPassword), $"{nameof(confirmPassword)} is null or empty");
+        }
+
+        if (userModel.Password != confirmPassword)
+        {
+            throw new ArgumentException("Passwords do not match");
+        }
+
+        return await CreateUserAsync(userModel);
+    }
 
     public async Task<UserModel> CreateUserAsync(UserModel userModel)
     {
@@ -77,16 +87,11 @@ public class UserService : IUserService
             throw new ArgumentNullException(nameof(userModel.Username), $"{nameof(userModel.Username)} is null or empty");
         if (string.IsNullOrWhiteSpace(userModel.Email))
             throw new ArgumentNullException(nameof(userModel.Email), $"{nameof(userModel.Email)} is null or empty");
-        if (string.IsNullOrWhiteSpace(userModel.PasswordHash))
-            throw new ArgumentNullException(nameof(userModel.PasswordHash), $"{nameof(userModel.PasswordHash)} is null or empty");
+        if (string.IsNullOrWhiteSpace(userModel.Password))
+            throw new ArgumentNullException(nameof(userModel.Password), $"{nameof(userModel.Password)} is null or empty");
 
-        if (userModel.PasswordHash != userModel.ConfirmPasswordHash)
-        {
-            throw new ArgumentException("Passwords do not match");
-        }
         var hasher = new PasswordHasher<UserModel>();
-        userModel.PasswordHash = hasher.HashPassword(userModel, userModel.PasswordHash);
-        userModel.ConfirmPasswordHash = userModel.PasswordHash;
+        userModel.Password = hasher.HashPassword(userModel, userModel.Password);
 
         userModel.IsEmailConfirmed = false;
         userModel.IsActive = false;
@@ -172,7 +177,7 @@ public class UserService : IUserService
         await _emailSender.SendEmailAsync(message);
     }
     
-    public async Task ResetPasswordUserAsync(UserModel userModel, string token)
+    public async Task ResetPasswordUserAsync(string newPassword, string confirmPassword, string token)
     {
         var userId = await _emailConfirmService.GetUserIdByTokenAsync(token);
         if (userId is null)
@@ -186,34 +191,29 @@ public class UserService : IUserService
             throw new Exception("User not found");
         }
 
-        if (userModel.PasswordHash != userModel.ConfirmPasswordHash)
+        if (string.IsNullOrWhiteSpace(newPassword))
+        {
+            throw new ArgumentNullException(nameof(newPassword), $"{nameof(newPassword)} is null or empty");
+        }
+
+        if (newPassword != confirmPassword)
         {
             throw new Exception("Passwords do not match");
         }
 
-        if (user.PasswordHash == userModel.PasswordHash)
+        var hasher = new PasswordHasher<UserModel>();
+
+        var passwordVerification = hasher.VerifyHashedPassword(user, user.Password, newPassword);
+        if (passwordVerification == PasswordVerificationResult.Success)
         {
             throw new Exception("Enter new password");
         }
 
-        var hasher = new PasswordHasher<UserModel>();
-        var passwordVerification = hasher.VerifyHashedPassword(user, user.PasswordHash, userModel.PasswordHash);
-        if (passwordVerification == PasswordVerificationResult.Success)
-        {
-            throw new Exception("New password must be different from current password");
-        }
-
-        user.PasswordHash = hasher.HashPassword(userModel, userModel.PasswordHash);
-        user.ConfirmPasswordHash = user.PasswordHash;
+        user.Password = hasher.HashPassword(user, newPassword);
         user.IsActive = true;
         await UpdateUserAsync(user);
 
         await _emailConfirmService.DeleteTokenByUserIdAsync(user.Id);
-    }
-
-    public Task DeleteUserAsync(Guid id)
-    {
-        throw new NotImplementedException();
     }
 
     public async Task ActivateUserAsync(Guid userId)

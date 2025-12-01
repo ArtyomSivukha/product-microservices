@@ -8,11 +8,11 @@ namespace ProductManagement.Application.Services;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
-    private readonly UserServiceClient _userServiceClient;
+    private readonly IUserServiceClient _userServiceClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public ProductService(
-        UserServiceClient userServiceClient,
+        IUserServiceClient userServiceClient,
         IProductRepository productRepository,
         IHttpContextAccessor httpContextAccessor)
     {

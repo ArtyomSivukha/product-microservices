@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using UserManagement.Application;
-using UserManagement.Application.Services;
 using UserManagement.Application.Services.UserService;
 using UserManagement.Domain.Users;
 using UserManagement.Web.Model;
@@ -18,12 +16,10 @@ public class AuthController : ControllerBase
     private readonly IUserService _userService;
     private readonly ITokenService _tokenService;
     private readonly PasswordHasher<UserModel> _passwordHasher = new();
-    private readonly IMapper _mapper;
 
-    public AuthController(ITokenService tokenService, IUserService userService, IMapper mapper)
+    public AuthController(ITokenService tokenService, IUserService userService)
     {
         _userService = userService;
-        _mapper = mapper;
         _tokenService = tokenService;
     }
 
@@ -33,7 +29,7 @@ public class AuthController : ControllerBase
         var user = await _userService.GetUserByEmailAsync(request.Email);
         if (user is null)
         {
-            throw new AccessViolationException("Invalid credentials");
+            throw new AccessViolationException("Invalid email");
         }
 
         if (user.IsActive == false)
@@ -49,10 +45,10 @@ public class AuthController : ControllerBase
         try
         {
             var passwordValid = _passwordHasher
-                .VerifyHashedPassword(null!, user.PasswordHash, request.Password);
+                .VerifyHashedPassword(null!, user.Password, request.Password);
 
             if (passwordValid != PasswordVerificationResult.Success)
-                throw new AccessViolationException("Invalid username or password");
+                throw new AccessViolationException("Invalid password");
 
             var token = _tokenService.GenerateToken(user);
             return Ok(new AuthResponse(token, new UserInfoResponse(user.Id, user.Username, user.Role.ToString())));
@@ -67,7 +63,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO forgotPasswordDto)
     {
         var user = await _userService.GetUserByEmailAsync(forgotPasswordDto.Email);
-        _ = user ?? throw new ArgumentNullException(nameof(user), "Invalid request");
+        _ = user ?? throw new ArgumentNullException(nameof(user), "Invalid email");
        
         await _userService.SendEmailToResetPasswordAsync(user.Email);
         return Ok();
@@ -84,8 +80,10 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var userModel = _mapper.Map<UserModel>(resetPasswordDto);
-            await _userService.ResetPasswordUserAsync(userModel, token);
+            await _userService.ResetPasswordUserAsync(
+                resetPasswordDto.Password,
+                resetPasswordDto.ConfirmPassword,
+                token);
         
             return Ok(new { message = "Password reset successfully. You can now login." });
         }

@@ -8,14 +8,13 @@ public interface IUserService
     Task<UserModel?> GetUserByIdAsync(Guid id);
     Task<UserModel?> GetUserByUsernameAsync(string username);
     Task<UserModel> CreateUserAsync(UserModel userModel);
+    Task<UserModel> RegisterUserAsync(UserModel userModel, string confirmPassword);
     Task<UserModel?> GetUserByEmailAsync(string email);
     Task SendEmailToResetPasswordAsync(string email);
     Task<bool> IsEmailExitsAsync(string email);
     Task UpdateUserAsync(UserModel userModel);
     Task ConfirmUserAsync(string token);
-    Task ResetPasswordUserAsync(UserModel userModel, string token);
-    Task DeleteUserAsync(Guid id);
-    
+    Task ResetPasswordUserAsync(string newPassword, string confirmPassword, string token);
     Task ActivateUserAsync(Guid userId);
     Task DeactivateUserAsync(Guid userId);
 

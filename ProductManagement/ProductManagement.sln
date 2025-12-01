@@ -14,6 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductManagement.Applicati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductManagement.Infrastructure", "ProductManagement.Infrastructure\ProductManagement.Infrastructure.csproj", "{E0957801-2CEC-47D5-B70D-24C6A0FFFA0A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{16AFA157-5F22-47B4-8083-AC31129A9245}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductManagement.Application.Tests", "ProductManagement.Application.Tests\ProductManagement.Application.Tests.csproj", "{2CFA270B-DFD6-4840-8A40-BC637C9E9818}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,12 @@ Global
 		{E0957801-2CEC-47D5-B70D-24C6A0FFFA0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0957801-2CEC-47D5-B70D-24C6A0FFFA0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0957801-2CEC-47D5-B70D-24C6A0FFFA0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CFA270B-DFD6-4840-8A40-BC637C9E9818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CFA270B-DFD6-4840-8A40-BC637C9E9818}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CFA270B-DFD6-4840-8A40-BC637C9E9818}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CFA270B-DFD6-4840-8A40-BC637C9E9818}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2CFA270B-DFD6-4840-8A40-BC637C9E9818} = {16AFA157-5F22-47B4-8083-AC31129A9245}
 	EndGlobalSection
 EndGlobal

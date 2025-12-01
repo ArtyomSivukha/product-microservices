@@ -30,7 +30,7 @@ public class SignUpController : ControllerBase
         }
         
         var userModel = _mapper.Map<UserModel>(signUpUserRequest);
-        await _userService.CreateUserAsync(userModel);
+        await _userService.RegisterUserAsync(userModel, signUpUserRequest.ConfirmPassword);
         return Ok();
     }
     

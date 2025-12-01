@@ -41,18 +41,7 @@ public class UserRepository : IUserRepository
         var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
         return userEntity is null ? null : _mapper.Map<UserModel>(userEntity);
     }
-
-    // public async Task<bool> IsEmailConfirmedAsync(UserModel userModel)
-    // {
-    //     var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == userModel.Email);
-    //     if (userEntity is null)
-    //     {
-    //         return false;
-    //     }
-    //
-    //     return true;
-    // }
-
+    
     public async Task<UserModel> CreateAsync(UserModel user)
     {
         var userEntity = _mapper.Map<User>(user);
@@ -70,8 +59,7 @@ public class UserRepository : IUserRepository
         }
         userEntity.FirstName = user.FirstName;
         userEntity.LastName = user.LastName;
-        userEntity.PasswordHash= user.PasswordHash;
-        userEntity.ConfirmPasswordHash= user.ConfirmPasswordHash;
+        userEntity.Password = user.Password;
         userEntity.IsEmailConfirmed = user.IsEmailConfirmed;
         userEntity.IsActive = user.IsActive;
         userEntity.Modified = DateTime.UtcNow;

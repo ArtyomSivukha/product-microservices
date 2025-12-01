@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace ProductManagement.Application.Users;
 
-public class UserServiceClient
+public class UserServiceClient : IUserServiceClient
 {
     private readonly HttpClient _httpClient;
 

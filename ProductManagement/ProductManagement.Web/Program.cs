@@ -24,7 +24,7 @@ builder.Services.AddUserHttpClient(builder.Configuration);
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<UserServiceClient>();
+builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
 
 builder.Services.AddHttpContextAccessor();
 
